@@ -17,16 +17,18 @@ import {
   getRecentLogs,
   getMaintenanceData,
   postControlAction,
+  getLiveTags,
 } from './services/api';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('fleet');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [backendStatus, setBackendStatus] = useState(true);
   const [statusData, setStatusData] = useState(null);
   const [fleetData, setFleetData] = useState(null);
   const [currentData, setCurrentData] = useState(null);
   const [historyData, setHistoryData] = useState(null);
   const [maintenanceData, setMaintenanceData] = useState(null);
+  const [liveTagsData, setLiveTagsData] = useState(null);
   const [logs, setLogs] = useState([]);
   const [speed, setSpeed] = useState(1.0);
   const [autoPlay, setAutoPlay] = useState(false);
@@ -55,12 +57,13 @@ function App() {
 
     const pollData = async () => {
       try {
-        const [curr, hist, lg, maint, flt] = await Promise.all([
+        const [curr, hist, lg, maint, flt, tagsData] = await Promise.all([
           getCurrentData(unitSystem),
           getHistoryData(),
           getRecentLogs(unitSystem),
           getMaintenanceData(),
           getFleetOverview(),
+          getLiveTags(),
         ]);
 
         if (isSubscribed) {
@@ -69,6 +72,7 @@ function App() {
           setLogs(lg.logs || []);
           setMaintenanceData(maint);
           setFleetData(flt);
+          setLiveTagsData(tagsData);
           setAutoPlay(curr.auto_play);
           setSpeed(curr.simulation_speed);
 
@@ -165,6 +169,7 @@ function App() {
               currentData={currentData}
               historyData={historyData}
               logs={logs}
+              liveTagsData={liveTagsData}
               unitSystem={unitSystem}
             />
           )}

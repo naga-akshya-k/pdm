@@ -7,7 +7,7 @@ FLEET_CONFIGS = {
         "name": "Turbine Motor Unit A1",
         "type": "Gas Turbine Generator",
         "location": "Power Generation Hall - Bay 4",
-        "max_lifespan_days": 365,
+        "max_lifespan_days": 100,
         "base_temp": 62.0,      # °C
         "base_vib": 0.20,       # mm/s RMS
         "base_curr": 8.0,       # Amps
@@ -16,48 +16,6 @@ FLEET_CONFIGS = {
         "base_rpm": 3000.0,     # RPM
         "base_freq": 50.0,      # Hz
         "base_load": 15.0,      # kN
-    },
-    "PMP-401B": {
-        "name": "Centrifugal Slurry Pump B2",
-        "type": "Heavy Slurry Transfer Pump",
-        "location": "Mineral Processing Area - Line 2",
-        "max_lifespan_days": 300,
-        "base_temp": 48.0,
-        "base_vib": 0.35,
-        "base_curr": 14.2,
-        "base_noise": 55.0,
-        "base_pressure": 12.0,
-        "base_rpm": 1450.0,
-        "base_freq": 24.2,
-        "base_load": 8.5,
-    },
-    "CMP-605C": {
-        "name": "Reciprocating Gas Compressor C3",
-        "type": "Multi-Stage Gas Compressor",
-        "location": "Petrochemical Synthesis Plant - Unit 1",
-        "max_lifespan_days": 420,
-        "base_temp": 75.0,
-        "base_vib": 0.42,
-        "base_curr": 22.0,
-        "base_noise": 68.0,
-        "base_pressure": 28.5,
-        "base_rpm": 980.0,
-        "base_freq": 16.3,
-        "base_load": 32.0,
-    },
-    "CNC-900D": {
-        "name": "High-Speed CNC Spindle D4",
-        "type": "Precision Milling Electro-Spindle",
-        "location": "Aerospace Machining Cell 3",
-        "max_lifespan_days": 250,
-        "base_temp": 38.0,
-        "base_vib": 0.12,
-        "base_curr": 5.5,
-        "base_noise": 38.0,
-        "base_pressure": 6.0,
-        "base_rpm": 12000.0,
-        "base_freq": 200.0,
-        "base_load": 3.2,
     }
 }
 
@@ -92,10 +50,10 @@ class IndustrialMachineSimulator:
             "hydraulic_seals": 100.0
         }
 
-        # Lifespan & Wear schedule
-        self.target_lifespan = int(self.config["max_lifespan_days"] * random.uniform(0.92, 1.08))
+        # Lifespan & Wear schedule (Day 50 Wear Inception Contract)
+        self.target_lifespan = int(self.config["max_lifespan_days"] * random.uniform(0.95, 1.05))
         self.rul = float(self.target_lifespan)
-        self.start_wear_day = round(float(self.target_lifespan) * random.uniform(0.38, 0.44), 1)
+        self.start_wear_day = 50.0  # Uniform until Day 50, then wear begins and increases steeply
 
         # Baseline parameters
         self.temp_base = self.config["base_temp"] * random.uniform(0.98, 1.02)
@@ -160,24 +118,25 @@ class IndustrialMachineSimulator:
         for k in self.drifts:
             self.drifts[k] = 0.82 * self.drifts[k] + np.random.normal(0, 0.08)
 
-        # Base wear progression
+        # Base wear progression (Uniform until Day 50, then increases slightly, then steeply high)
         wear_span = max(1.0, float(self.target_lifespan) - self.start_wear_day)
         if day <= self.start_wear_day:
-            p = 0.02 * (day / self.start_wear_day)
+            p = 0.0  # Completely uniform flat baseline before fault inception
             sigma_mult = 1.0
         else:
-            p = min(1.4, (day - self.start_wear_day) / wear_span)
-            sigma_mult = 1.0 + 2.2 * (p ** 1.6)
+            p_rel = (day - self.start_wear_day) / wear_span
+            p = min(1.5, (p_rel ** 1.6))  # Starts slightly, then curves steeply upward
+            sigma_mult = 1.0 + 2.5 * p
 
         # Compute natural physical degradation means
-        t_mean = self.temp_base + (18.0 * (p ** 1.7)) + self.drifts["temp"] * 0.4
-        v_mean = self.vib_base + (4.8 * (p ** 1.8)) + self.drifts["vib"] * 0.1
-        c_mean = self.curr_base + (9.5 * (p ** 1.7)) + self.drifts["curr"] * 0.3
-        n_mean = self.noise_base + (35.0 * (p ** 1.7)) + self.drifts["noise"] * 0.5
-        p_mean = self.pressure_base - (self.pressure_base * 0.30 * (p ** 1.8)) + self.drifts["pressure"] * 0.2
-        rpm_mean = self.rpm_base - (self.rpm_base * 0.08 * (p ** 1.9)) + self.drifts["rpm"] * 10.0
-        f_mean = self.freq_base + (self.freq_base * 0.12 * (p ** 1.7)) + self.drifts["freq"] * 0.5
-        load_mean = self.load_base + (self.load_base * 0.20 * (p ** 1.7)) + self.drifts["load"] * 0.3
+        t_mean = self.temp_base + (22.0 * (p ** 1.6)) + self.drifts["temp"] * 0.4
+        v_mean = self.vib_base + (4.5 * (p ** 1.6)) + self.drifts["vib"] * 0.1
+        c_mean = self.curr_base + (9.5 * (p ** 1.6)) + self.drifts["curr"] * 0.3
+        n_mean = self.noise_base + (35.0 * (p ** 1.6)) + self.drifts["noise"] * 0.5
+        p_mean = self.pressure_base - (self.pressure_base * 0.30 * (p ** 1.6)) + self.drifts["pressure"] * 0.2
+        rpm_mean = self.rpm_base - (self.rpm_base * 0.08 * (p ** 1.6)) + self.drifts["rpm"] * 10.0
+        f_mean = self.freq_base + (self.freq_base * 0.12 * (p ** 1.6)) + self.drifts["freq"] * 0.5
+        load_mean = self.load_base + (self.load_base * 0.20 * (p ** 1.6)) + self.drifts["load"] * 0.3
 
         # Fault Injection Overrides
         fault_name = "None"
@@ -188,26 +147,21 @@ class IndustrialMachineSimulator:
                 f_mean *= 1.75
                 n_mean += 22.0
                 t_mean += 8.5
-                self.subcomponents["bearing_assembly"] = max(5.0, self.subcomponents["bearing_assembly"] - 3.5)
                 fault_name = "Bearing Micro-Spalling Fault"
             elif self.active_fault == "thermal_runaway":
                 t_mean += 32.0
                 c_mean += 4.8
-                self.subcomponents["cooling_system"] = max(5.0, self.subcomponents["cooling_system"] - 4.0)
-                self.subcomponents["stator_windings"] = max(10.0, self.subcomponents["stator_windings"] - 2.5)
                 fault_name = "Thermal Cooling Runaway"
             elif self.active_fault == "cavitation":
                 p_mean *= 0.38
                 n_mean += 28.0
                 v_mean *= 2.4
-                self.subcomponents["hydraulic_seals"] = max(5.0, self.subcomponents["hydraulic_seals"] - 3.8)
                 fault_name = "Hydraulic Cavitation Surge"
             elif self.active_fault == "rotor_imbalance":
                 v_mean *= 2.9
                 c_mean *= 1.85
                 load_mean *= 1.5
                 rpm_mean *= 0.92
-                self.subcomponents["rotor_balance"] = max(5.0, self.subcomponents["rotor_balance"] - 3.2)
                 fault_name = "Rotor Eccentric Imbalance"
 
             if self.fault_duration_remaining <= 0:
@@ -231,12 +185,18 @@ class IndustrialMachineSimulator:
         freq = max(5.0, f_mean + np.random.normal(0, 0.20 * sigma_mult))
         load = max(1.0, load_mean + np.random.normal(0, 0.25 * sigma_mult))
 
-        # Update Subcomponent Health Decay
-        self.subcomponents["bearing_assembly"] = max(0.0, min(100.0, 100.0 - (vib / (self.vib_base * 4.5)) * 95.0))
-        self.subcomponents["cooling_system"] = max(0.0, min(100.0, 100.0 - ((temp - self.temp_base) / 28.0) * 95.0))
-        self.subcomponents["stator_windings"] = max(0.0, min(100.0, 100.0 - ((curr - self.curr_base) / 12.0) * 90.0))
-        self.subcomponents["hydraulic_seals"] = max(0.0, min(100.0, 100.0 - (abs(pressure - self.pressure_base) / self.pressure_base) * 90.0))
-        self.subcomponents["rotor_balance"] = max(0.0, min(100.0, 100.0 - (vib / (self.vib_base * 4.0)) * 85.0))
+        # Update Subcomponent Health Decay (Uniform 100% until Day 50, then smooth wear progression)
+        decay_factor = min(100.0, p * 100.0)
+        bearing_fault_penalty = 55.0 if self.active_fault == "bearing_degradation" else 0.0
+        thermal_fault_penalty = 50.0 if self.active_fault == "thermal_runaway" else 0.0
+        hydraulic_fault_penalty = 55.0 if self.active_fault == "cavitation" else 0.0
+        rotor_fault_penalty = 50.0 if self.active_fault == "rotor_imbalance" else 0.0
+
+        self.subcomponents["bearing_assembly"] = max(0.0, min(100.0, 100.0 - decay_factor * 0.95 - bearing_fault_penalty))
+        self.subcomponents["cooling_system"] = max(0.0, min(100.0, 100.0 - decay_factor * 0.70 - thermal_fault_penalty))
+        self.subcomponents["stator_windings"] = max(0.0, min(100.0, 100.0 - decay_factor * 0.75 - thermal_fault_penalty * 0.5))
+        self.subcomponents["hydraulic_seals"] = max(0.0, min(100.0, 100.0 - decay_factor * 0.65 - hydraulic_fault_penalty))
+        self.subcomponents["rotor_balance"] = max(0.0, min(100.0, 100.0 - decay_factor * 0.90 - rotor_fault_penalty))
 
         # Overall Machine Health as harmonic mean of subcomponents & overall wear
         min_sub = min(self.subcomponents.values())
@@ -265,6 +225,7 @@ class IndustrialMachineSimulator:
             "Frequency": round(float(freq), 2),
             "Load": round(float(load), 2),
             "Machine_Health": round(float(self.health), 1),
+            "Degradation_Index": round(float(max(0.0, 100.0 - self.health)), 1),
             "Machine_Status": self._evaluate_stage(),
             "Remaining_Useful_Life_Days": int(self.rul),
             "Active_Event": self.active_event,

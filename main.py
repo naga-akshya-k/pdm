@@ -186,6 +186,38 @@ def set_mqtt_config(req: MQTTConfigRequest):
     status = mqtt_listener.configure(req.broker_host, req.broker_port, req.topic)
     return {"status": "success", "config": status}
 
+@app.get("/api/tags/live")
+def get_live_tags():
+    """Returns live telemetry tagged by industrial SCADA/PLC Tag IDs for Turbine Motor A1."""
+    curr = get_current_telemetry()
+    is_live = bool(curr.get("mqtt_live", False))
+    
+    tags_list = []
+    for tag_id, meta in TURBINE_TAG_REGISTRY.items():
+        feat_name = meta["feature_name"]
+        val = curr.get(feat_name.lower())
+        tags_list.append({
+            "tag_id": tag_id,
+            "feature_name": feat_name,
+            "description": meta["description"],
+            "unit": meta["unit"],
+            "current_value": val,
+            "normal_min": meta["normal_min"],
+            "normal_max": meta["normal_max"],
+            "crit_threshold": meta["crit_threshold"],
+            "source": "Workstation GPU (Live MQTT)" if is_live else "Digital Twin Simulation",
+            "is_live_gpu": is_live
+        })
+    return {
+        "machine_id": "MCH-802X",
+        "machine_name": "Turbine Motor Unit A1",
+        "total_tags": len(tags_list),
+        "data_source": curr.get("data_source"),
+        "mqtt_live": is_live,
+        "mqtt_delta_t_ms": curr.get("mqtt_delta_t_ms"),
+        "tags": tags_list
+    }
+
 @app.get("/api/status")
 def get_status():
     active_sim = fleet_manager.get_active_simulator()
@@ -395,6 +427,7 @@ def get_history_trends():
         "frequency_trend": make_trend("Frequency"),
         "load_trend": make_trend("Load"),
         "machine_health_trend": make_trend("Machine_Health"),
+        "degradation_trend": make_trend("Degradation_Index"),
         "rul_trend": make_trend("Predicted_RUL")
     }
 

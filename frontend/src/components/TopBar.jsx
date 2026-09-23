@@ -15,7 +15,7 @@ const TopBar = ({ backendStatus, statusData, currentData, unitSystem, setUnitSys
     <header className="bg-slate-900 text-white px-5 py-2.5 shadow-md flex items-center justify-between text-xs sm:text-sm font-medium border-b border-slate-800 shrink-0 select-none">
       <div className="flex items-center space-x-4 sm:space-x-6">
         <div className="flex items-center space-x-2">
-          <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-[11px] font-bold tracking-wide">PLANT FLEET</span>
+          <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-[11px] font-bold tracking-wide">TURBINE MOTOR</span>
           <span className="font-mono font-bold text-slate-100">{currentData?.machine_id || statusData?.active_machine_id || 'MCH-802X'}</span>
         </div>
 

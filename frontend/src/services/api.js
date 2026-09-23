@@ -104,3 +104,13 @@ export const getModelMetrics = async () => {
   const res = await api.get('/model');
   return res.data;
 };
+
+export const getLiveTags = async () => {
+  const res = await api.get('/tags/live');
+  return res.data;
+};
+
+export const getMqttStatus = async () => {
+  const res = await api.get('/mqtt/status');
+  return res.data;
+};

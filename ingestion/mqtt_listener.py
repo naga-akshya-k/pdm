@@ -31,7 +31,7 @@ class IndustrialMQTTListener:
         broker_port: Optional[int] = None,
         topic: str = "plant/bay4/turbine_motor/+/telemetry",
         nominal_interval_ms: float = 1000.0,
-        heartbeat_timeout_s: float = 3.0,
+        heartbeat_timeout_s: float = 6.0,
     ):
         self.broker_host = broker_host or os.getenv("MQTT_BROKER_HOST", "127.0.0.1")
         self.broker_port = int(broker_port or os.getenv("MQTT_BROKER_PORT", "1883"))

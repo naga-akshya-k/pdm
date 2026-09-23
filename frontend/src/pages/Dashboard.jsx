@@ -5,8 +5,9 @@ import MetricCard from '../components/MetricCard';
 import StatusBadge from '../components/StatusBadge';
 import LiveChart from '../components/LiveChart';
 import SensorTable from '../components/SensorTable';
+import TagIdMonitorCard from '../components/TagIdMonitorCard';
 
-const Dashboard = ({ currentData, historyData, logs, unitSystem = 'metric' }) => {
+const Dashboard = ({ currentData, historyData, logs, liveTagsData, unitSystem = 'metric' }) => {
   const health = currentData?.machine_health ?? 100;
   const statusColor =
     health >= 80 ? '#22C55E' : health >= 60 ? '#2563EB' : health >= 40 ? '#F59E0B' : '#EF4444';
@@ -60,20 +61,23 @@ const Dashboard = ({ currentData, historyData, logs, unitSystem = 'metric' }) =>
 
         <div className="lg:col-span-2">
           <MetricCard
-            title="Plant Maintenance Status"
+            title="Turbine Motor Maintenance Status"
             badgeComponent={<StatusBadge status={currentData?.alert_status || 'Healthy'} />}
           />
         </div>
 
         <div className="lg:col-span-2">
           <MetricCard
-            title="Active Operational State"
+            title="Turbine Operational State"
             value={currentData?.active_event !== 'None' ? currentData?.active_event : 'Nominal Baseline'}
             icon={ShieldAlert}
             valueColor={currentData?.active_event !== 'None' ? 'text-red-600' : 'text-emerald-600'}
           />
         </div>
       </div>
+
+      {/* Industrial Tag ID Telemetry Inspector (Company Workstation GPU Stream) */}
+      <TagIdMonitorCard liveTagsData={liveTagsData} />
 
       {/* Row 2: 8 Physical Telemetry Channels */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">

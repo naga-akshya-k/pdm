@@ -44,15 +44,15 @@ const Sidebar = ({
         {/* Navigation Tabs */}
         <nav className="space-y-1">
           <button
-            onClick={() => setActiveTab('fleet')}
+            onClick={() => setActiveTab('dashboard')}
             className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
-              activeTab === 'fleet'
+              activeTab === 'dashboard'
                 ? 'bg-blue-50 text-blue-700 border border-blue-200 font-bold'
                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             }`}
           >
-            <Factory className="w-4 h-4 text-blue-600" />
-            <span>Plant Fleet Overview</span>
+            <LayoutDashboard className="w-4 h-4 text-blue-600" />
+            <span>Turbine Motor Telemetry</span>
           </button>
 
           {/* Early Warning Tab with dynamic badge */}
@@ -74,15 +74,15 @@ const Sidebar = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => setActiveTab('fleet')}
             className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
-              activeTab === 'dashboard'
+              activeTab === 'fleet'
                 ? 'bg-blue-50 text-blue-700 border border-blue-200 font-bold'
                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             }`}
           >
-            <LayoutDashboard className="w-4 h-4 text-emerald-600" />
-            <span>Digital Twin Telemetry</span>
+            <Factory className="w-4 h-4 text-slate-600" />
+            <span>Asset Specs & Diagnostics</span>
           </button>
 
           <button
