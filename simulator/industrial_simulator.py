@@ -118,21 +118,26 @@ class IndustrialMachineSimulator:
         for k in self.drifts:
             self.drifts[k] = 0.82 * self.drifts[k] + np.random.normal(0, 0.08)
 
-        # Base wear progression (Uniform until Day 50, then increases slightly, then steeply high)
+        # Natural cyclical operational micro-curves (14-day load & diurnal thermal breathing)
+        cycle_rad = (day * 2.0 * np.pi) / 14.0
+        micro_cycle = (0.75 * np.sin(cycle_rad)) + (0.45 * np.sin(cycle_rad * 2.3 + 0.4))
+        micro_vib_cycle = 0.016 * np.sin(cycle_rad) + 0.009 * np.cos(cycle_rad * 2.1)
+
+        # Base wear progression (Uniform baseline with small natural curves until Day 50, then exponential rise)
         wear_span = max(1.0, float(self.target_lifespan) - self.start_wear_day)
         if day <= self.start_wear_day:
-            p = 0.0  # Completely uniform flat baseline before fault inception
+            p = 0.0  # Completely uniform baseline before fault inception
             sigma_mult = 1.0
         else:
             p_rel = (day - self.start_wear_day) / wear_span
             p = min(1.5, (p_rel ** 1.6))  # Starts slightly, then curves steeply upward
             sigma_mult = 1.0 + 2.5 * p
 
-        # Compute natural physical degradation means
-        t_mean = self.temp_base + (22.0 * (p ** 1.6)) + self.drifts["temp"] * 0.4
-        v_mean = self.vib_base + (4.5 * (p ** 1.6)) + self.drifts["vib"] * 0.1
-        c_mean = self.curr_base + (9.5 * (p ** 1.6)) + self.drifts["curr"] * 0.3
-        n_mean = self.noise_base + (35.0 * (p ** 1.6)) + self.drifts["noise"] * 0.5
+        # Compute natural physical degradation means with organic micro-curves
+        t_mean = self.temp_base + (0.8 * np.sin(cycle_rad)) + (22.0 * (p ** 1.6)) + self.drifts["temp"] * 0.4
+        v_mean = self.vib_base + micro_vib_cycle + (4.5 * (p ** 1.6)) + self.drifts["vib"] * 0.1
+        c_mean = self.curr_base + (0.35 * np.cos(cycle_rad)) + (9.5 * (p ** 1.6)) + self.drifts["curr"] * 0.3
+        n_mean = self.noise_base + (1.2 * np.sin(cycle_rad)) + (35.0 * (p ** 1.6)) + self.drifts["noise"] * 0.5
         p_mean = self.pressure_base - (self.pressure_base * 0.30 * (p ** 1.6)) + self.drifts["pressure"] * 0.2
         rpm_mean = self.rpm_base - (self.rpm_base * 0.08 * (p ** 1.6)) + self.drifts["rpm"] * 10.0
         f_mean = self.freq_base + (self.freq_base * 0.12 * (p ** 1.6)) + self.drifts["freq"] * 0.5
@@ -185,8 +190,9 @@ class IndustrialMachineSimulator:
         freq = max(5.0, f_mean + np.random.normal(0, 0.20 * sigma_mult))
         load = max(1.0, load_mean + np.random.normal(0, 0.25 * sigma_mult))
 
-        # Update Subcomponent Health Decay (Uniform 100% until Day 50, then smooth wear progression)
-        decay_factor = min(100.0, p * 100.0)
+        # Update Subcomponent Health Decay (Uniform baseline with small natural curves until Day 50, then smooth wear progression)
+        baseline_wear = max(0.5, 2.0 + micro_cycle + np.random.normal(0, 0.12))
+        decay_factor = min(100.0, baseline_wear + (p * 85.0))
         bearing_fault_penalty = 55.0 if self.active_fault == "bearing_degradation" else 0.0
         thermal_fault_penalty = 50.0 if self.active_fault == "thermal_runaway" else 0.0
         hydraulic_fault_penalty = 55.0 if self.active_fault == "cavitation" else 0.0

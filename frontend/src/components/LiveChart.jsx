@@ -100,7 +100,7 @@ const LiveChart = ({ historyData }) => {
               type: 'scatter',
               mode: 'lines',
               name: 'Actual Reading',
-              line: { color: config.color, width: 2 },
+              line: { color: config.color, width: 2.5, shape: 'spline', smoothing: 1.2 },
             },
             {
               x: xFuture,
@@ -108,7 +108,7 @@ const LiveChart = ({ historyData }) => {
               type: 'scatter',
               mode: 'lines',
               name: 'Projected Trend',
-              line: { color: '#F59E0B', width: 2, dash: 'dash' },
+              line: { color: '#F59E0B', width: 2, dash: 'dash', shape: 'spline', smoothing: 1.2 },
             },
           ]}
           layout={{
