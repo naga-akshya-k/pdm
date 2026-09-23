@@ -358,6 +358,7 @@ def get_current_telemetry(unit_system: str = "metric"):
         "location": row.get("Location", "Bay 4"),
         "current_idx": len(hist) - 1,
         "total_records": len(hist),
+        "day": int(row.get("Day", len(hist))),
         "timestamp": str(row.get("Timestamp", "")),
         "temperature": display_temp,
         "vibration": display_vib,

@@ -28,8 +28,8 @@ const LiveChart = ({ historyData }) => {
     ? trend.predicted_future.map((_, i) => latestDay + i)
     : [];
 
-  const visibleMin = Math.max(1, latestDay - 100);
-  const visibleMax = latestDay + 20;
+  const visibleMin = Math.max(1, latestDay - 80);
+  const visibleMax = Math.max(70, latestDay + 15);
 
   // Telemetry-driven degradation detection (Inception of wear at Day 50)
   const degradationDay = 50;
