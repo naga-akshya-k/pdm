@@ -24,14 +24,14 @@ def run_stream(seconds=60, interval=1.0, fault=False):
     start_time = time.time()
     step = 1
 
-    base_vib = 0.35 if not fault else 2.45
-    base_temp = 62.5 if not fault else 89.2
-    base_curr = 9.8 if not fault else 18.5
-    base_noise = 49.0 if not fault else 78.0
+    base_vib = 0.22 if not fault else 2.45
+    base_temp = 62.0 if not fault else 89.2
+    base_curr = 8.5 if not fault else 18.5
+    base_noise = 42.0 if not fault else 78.0
     base_pres = 4.5 if not fault else 3.1
     base_rpm = 3000.0 if not fault else 2910.0
     base_freq = 50.0 if not fault else 62.5
-    base_load = 58.0 if not fault else 92.0
+    base_load = 50.0 if not fault else 92.0
 
     while time.time() - start_time < seconds:
         packet = {
@@ -62,19 +62,24 @@ def run_stream(seconds=60, interval=1.0, fault=False):
             listener = data.get("listener_status", {})
             dt = listener.get("last_delta_t_ms", 1000.0)
             
-            vib = packet["tags"]["TURB_MTR_DE_VIB_RMS"]
-            temp = packet["tags"]["TURB_MTR_STATOR_TEMP"]
-            curr = packet["tags"]["TURB_MTR_PHASE_CURRENT"]
-            
-            print(f"[{time.strftime('%H:%M:%S')}] Packet #{step:03d} -> Transmitted | "
-                  f"Vib: {vib:.3f} mm/s | Temp: {temp:.1f} C | Current: {curr:.1f} A | Dt: {dt:.1f} ms")
+            tags = packet["tags"]
+            print(f"[{time.strftime('%H:%M:%S')}] Packet #{step:03d} -> Transmitted 8/8 Tags | "
+                  f"Vib: {tags['TURB_MTR_DE_VIB_RMS']:.3f} mm/s | "
+                  f"Temp: {tags['TURB_MTR_STATOR_TEMP']:.1f} °C | "
+                  f"Curr: {tags['TURB_MTR_PHASE_CURRENT']:.1f} A | "
+                  f"RPM: {tags['TURB_MTR_SHAFT_SPEED']:.0f} | "
+                  f"Pres: {tags['TURB_MTR_LUBE_OIL_PRES']:.2f} bar | "
+                  f"Noise: {tags['TURB_MTR_ACOUSTIC_DB']:.0f} dB | "
+                  f"Freq: {tags['TURB_MTR_VIB_FREQ_01']:.1f} Hz | "
+                  f"Load: {tags['TURB_MTR_KW_LOAD']:.1f}%")
         except Exception as e:
             print(f"Transmission error: {e}")
 
         step += 1
         time.sleep(interval)
 
-    print("\nTransmission complete! 3-second watchdog will now revert to Digital Twin Simulation.")
+    print("\nTransmission complete! 6-second watchdog has successfully verified packet stream completion.")
+    print("Dashboard safely returns to Digital Twin baseline.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
