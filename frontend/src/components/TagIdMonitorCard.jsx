@@ -32,14 +32,19 @@ export default function TagIdMonitorCard({ liveTagsData }) {
     const val = Number(tag.current_value);
     if (isNaN(val)) return { color: 'text-slate-400', bg: 'bg-slate-800', border: 'border-slate-700', label: 'OFFLINE' };
     
-    // Check critical threshold
-    if (tag.crit_threshold) {
-      if (tag.feature_name === 'Pressure' && val <= tag.crit_threshold) {
-        return { color: 'text-red-400', bg: 'bg-red-950/40', border: 'border-red-600', label: 'CRITICAL LOW', icon: AlertCircle };
+    // Check critical thresholds
+    if (tag.feature_name === 'Pressure' && tag.crit_threshold && val <= tag.crit_threshold) {
+      return { color: 'text-red-400', bg: 'bg-red-950/40', border: 'border-red-600', label: 'CRITICAL LOW', icon: AlertCircle };
+    }
+    if (tag.feature_name === 'RPM') {
+      if (val <= 2500.0) {
+        return { color: 'text-red-400', bg: 'bg-red-950/40', border: 'border-red-600', label: 'CRITICAL STALL', icon: AlertCircle };
       }
-      if (tag.feature_name !== 'Pressure' && val >= tag.crit_threshold) {
+      if (val >= 3350.0) {
         return { color: 'text-red-400', bg: 'bg-red-950/40', border: 'border-red-600', label: 'CRITICAL HIGH', icon: AlertCircle };
       }
+    } else if (tag.crit_threshold && tag.feature_name !== 'Pressure' && val >= tag.crit_threshold) {
+      return { color: 'text-red-400', bg: 'bg-red-950/40', border: 'border-red-600', label: 'CRITICAL HIGH', icon: AlertCircle };
     }
 
     // Check normal bounds
