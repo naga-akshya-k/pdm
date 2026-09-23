@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import Plot from './Plot';
 
 const LiveChart = ({ historyData }) => {
-  const [selectedMetric, setSelectedMetric] = useState('Degradation_Index');
+  const [selectedMetric, setSelectedMetric] = useState('Machine_Health');
 
   const metricConfigs = {
-    Degradation_Index: { label: 'Overall Turbine Wear / Degradation Index (%) [Fault Progression]', key: 'degradation_trend', color: '#EF4444', unit: '%' },
-    Vibration: { label: 'Vibration RMS (mm/s) [Fault Severity Curve]', key: 'vibration_trend', color: '#3B82F6', unit: 'mm/s' },
     Machine_Health: { label: 'Overall Machine Health Index (%)', key: 'machine_health_trend', color: '#10B981', unit: '%' },
+    Degradation_Index: { label: 'Overall Turbine Wear / Degradation Index (%)', key: 'degradation_trend', color: '#EF4444', unit: '%' },
+    Vibration: { label: 'Turbine Vibration RMS (mm/s)', key: 'vibration_trend', color: '#3B82F6', unit: 'mm/s' },
     Predicted_RUL: { label: 'Predicted Remaining Useful Life (Days)', key: 'rul_trend', color: '#6366F1', unit: 'Days' },
     Temperature: { label: 'Temperature (°C)', key: 'temperature_trend', color: '#EF4444', unit: '°C' },
     Motor_Current: { label: 'Motor Current (A)', key: 'motor_current_trend', color: '#F59E0B', unit: 'A' },
@@ -28,38 +28,11 @@ const LiveChart = ({ historyData }) => {
     ? trend.predicted_future.map((_, i) => latestDay + i)
     : [];
 
-  const visibleMin = Math.max(1, latestDay - 80);
-  const visibleMax = Math.max(70, latestDay + 15);
+  const visibleMin = Math.max(1, latestDay - 50);
+  const visibleMax = Math.max(25, latestDay + 15);
 
-  // Telemetry-driven degradation detection (Inception of wear at Day 50)
-  const degradationDay = 50;
-
-  const shapes = degradationDay ? [
-    {
-      type: 'line',
-      x0: degradationDay,
-      x1: degradationDay,
-      y0: 0,
-      y1: 1,
-      yref: 'paper',
-      line: { color: '#EF4444', width: 1.5, dash: 'dash' },
-    },
-  ] : [];
-
-  const annotations = degradationDay ? [
-    {
-      x: degradationDay,
-      y: 1.05,
-      yref: 'paper',
-      text: `Day 50: Fault Inception ➔ Exponential Wear Curve Upward`,
-      showarrow: false,
-      font: { size: 10, color: '#DC2626' },
-      bgcolor: '#FEE2E2',
-      bordercolor: '#FCA5A5',
-      borderwidth: 1,
-      borderpad: 2,
-    },
-  ] : [];
+  const shapes = [];
+  const annotations = [];
 
   return (
     <div className="bg-white rounded-xl shadow-xs border border-gray-200 p-5">
@@ -76,10 +49,10 @@ const LiveChart = ({ historyData }) => {
             onChange={(e) => setSelectedMetric(e.target.value)}
             className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-1.5 font-medium cursor-pointer"
           >
-            <option value="Degradation_Index">Overall Turbine Wear / Degradation Index (%) [Uniform Day 0-50 ➔ Steep Exponential Rise]</option>
-            <option value="Vibration">Turbine Vibration RMS (mm/s) [Fault Severity Curve ➔ Curves Upward Day 50+]</option>
-            <option value="Machine_Health">Overall Machine Health Index (%) [100% ➔ Decreases Day 50+]</option>
-            <option value="Predicted_RUL">Remaining Useful Life (Days)</option>
+            <option value="Machine_Health">Overall Machine Health Index (%)</option>
+            <option value="Degradation_Index">Overall Turbine Wear / Degradation Index (%)</option>
+            <option value="Vibration">Turbine Vibration RMS (mm/s)</option>
+            <option value="Predicted_RUL">Predicted Remaining Useful Life (Days)</option>
             <option value="Temperature">Temperature (°C)</option>
             <option value="Motor_Current">Motor Current (A)</option>
             <option value="Acoustic_Noise">Acoustic Noise (dB)</option>
