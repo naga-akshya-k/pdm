@@ -78,6 +78,23 @@ const TopBar = ({ backendStatus, statusData, currentData, unitSystem, setUnitSys
           <span>{timeStr}</span>
         </div>
 
+        {/* Data Source & MQTT Ingestion Indicator */}
+        <div
+          className={`hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-full border text-[11px] font-bold ${
+            currentData?.mqtt_live
+              ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300'
+              : 'bg-slate-800/90 border-slate-700 text-slate-300'
+          }`}
+          title={
+            currentData?.mqtt_live
+              ? `Live Ingestion from Workstation GPU via MQTT (Interval: ${currentData?.mqtt_delta_t_ms || 1000}ms)`
+              : 'Physics-Based Digital Twin SCADA Simulation'
+          }
+        >
+          <span className={`w-2 h-2 rounded-full ${currentData?.mqtt_live ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'}`}></span>
+          <span>{currentData?.mqtt_live ? `MQTT GPU LIVE [${Math.round(currentData?.mqtt_delta_t_ms || 1000)}ms]` : 'SIMULATION'}</span>
+        </div>
+
         {/* Backend Status Indicator */}
         <div className="flex items-center space-x-2 bg-slate-800 px-2.5 py-1 rounded-full border border-slate-700">
           <span className={`w-2 h-2 rounded-full ${backendStatus ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></span>

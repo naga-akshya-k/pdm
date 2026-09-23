@@ -15,7 +15,7 @@ logger = logging.getLogger("uvicorn.error")
 
 # Ensure project modules are discoverable
 base_dir = os.path.dirname(os.path.abspath(__file__))
-for folder in ['simulator', 'preprocessing', 'model', 'utils']:
+for folder in ['simulator', 'preprocessing', 'model', 'utils', 'ingestion']:
     folder_path = os.path.join(base_dir, folder)
     if os.path.exists(folder_path) and folder_path not in sys.path:
         sys.path.append(folder_path)
@@ -31,6 +31,8 @@ from unit_converter import normalize_industrial_payload, to_canonical_units, fro
 from maintenance_engine import get_maintenance_recommendation, auto_generate_cmms_work_order, get_all_work_orders, WORK_ORDERS
 from predict import get_future_trend
 from utils import get_status_color
+from mqtt_listener import mqtt_listener
+from tag_mapping import TURBINE_TAG_REGISTRY, FEATURE_TO_TAG_MAP
 
 app = FastAPI(
     title="Enterprise Industrial Predictive Maintenance Platform",
@@ -146,21 +148,57 @@ async def simulation_clock_loop():
 @app.on_event("startup")
 async def startup_event():
     asyncio.create_task(simulation_clock_loop())
+    try:
+        mqtt_listener.start()
+    except Exception as e:
+        logger.warning(f"MQTT Listener init error: {e}")
+
+@app.on_event("shutdown")
+def shutdown_event():
+    try:
+        mqtt_listener.stop()
+    except Exception:
+        pass
 
 # ==========================================
-# FLEET & TELEMETRY ENDPOINTS
+# FLEET, MQTT & TELEMETRY ENDPOINTS
 # ==========================================
+
+@app.get("/api/mqtt/status")
+def get_mqtt_status():
+    """Returns live MQTT ingestion gateway telemetry, jitter, cadence, and active Tag IDs."""
+    return mqtt_listener.get_status()
+
+@app.post("/api/mqtt/inject")
+def inject_mqtt_packet(payload: Dict[str, Any]):
+    """Allows testing or simulating GPU telemetry packets via HTTP injection."""
+    mqtt_listener.inject_payload(payload)
+    return {"status": "success", "ingested": True, "listener_status": mqtt_listener.get_status()}
+
+class MQTTConfigRequest(BaseModel):
+    broker_host: Optional[str] = None
+    broker_port: Optional[int] = 1883
+    topic: Optional[str] = None
+
+@app.post("/api/mqtt/config")
+def set_mqtt_config(req: MQTTConfigRequest):
+    """Dynamically updates MQTT Broker IP, port, and topic to connect to workstation GPU."""
+    status = mqtt_listener.configure(req.broker_host, req.broker_port, req.topic)
+    return {"status": "success", "config": status}
 
 @app.get("/api/status")
 def get_status():
     active_sim = fleet_manager.get_active_simulator()
+    is_live_mqtt = mqtt_listener.is_stream_active() and fleet_manager.active_machine_id == "MCH-802X"
     return {
         "status": "online",
         "active_machine_id": fleet_manager.active_machine_id,
         "machine_name": active_sim.config["name"],
         "machine_type": active_sim.config["type"],
         "location": active_sim.config["location"],
-        "data_source": "Physics-Based Digital Twin SCADA Simulation",
+        "data_source": "Workstation GPU via MQTT (Tag IDs)" if is_live_mqtt else "Physics-Based Digital Twin SCADA Simulation",
+        "mqtt_connected": mqtt_listener.is_connected,
+        "mqtt_stream_active": is_live_mqtt,
         "active_ai_model": ai_engine.active_model_name,
         "model_version": ai_engine.model_version,
         "current_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -203,6 +241,41 @@ def get_current_telemetry(unit_system: str = "metric"):
     raw_rpm = float(row.get("RPM", 3000.0))
     raw_freq = float(row.get("Frequency", 50.0))
     raw_load = float(row.get("Load", 15.0))
+    pred_rul = int(row.get("Predicted_RUL", 0))
+
+    # Check if live workstation GPU telemetry is actively streaming via MQTT for MCH-802X
+    is_live_mqtt = False
+    mqtt_delta_t = None
+    data_source_str = "Physics-Based Digital Twin SCADA Simulation"
+
+    if mqtt_listener.is_stream_active() and active_m_id in [mqtt_listener.active_machine_id, "MCH-802X"] and active_m_id == "MCH-802X":
+        live_stream = mqtt_listener.get_live_telemetry()
+        if live_stream and "features" in live_stream:
+            feats = live_stream["features"]
+            raw_temp = float(feats.get("Temperature", 62.0))
+            raw_vib = float(feats.get("Vibration", 0.20))
+            raw_curr = float(feats.get("Motor_Current", 8.0))
+            raw_noise = float(feats.get("Acoustic_Noise", 42.0))
+            raw_press = float(feats.get("Pressure", 4.5))
+            raw_rpm = float(feats.get("RPM", 3000.0))
+            raw_freq = float(feats.get("Frequency", 50.0))
+            raw_load = float(feats.get("Load", 15.0))
+            
+            # Real-time AI prediction on live workstation GPU features
+            try:
+                live_pred = ai_engine.predict_active([raw_temp, raw_vib, raw_curr, raw_noise, raw_press, raw_rpm, raw_freq, raw_load])
+                pred_rul = live_pred.get("predicted_rul_days", pred_rul)
+            except Exception:
+                pass
+                
+            vib_deg = min(1.0, max(0.0, (raw_vib - 0.20) / 1.60))
+            temp_deg = min(1.0, max(0.0, (raw_temp - 50.0) / 45.0))
+            health = round(max(0.0, 100.0 * (1.0 - (0.70 * vib_deg + 0.30 * temp_deg))), 1)
+            stage_text, stage_color = get_status_color(health)
+            
+            is_live_mqtt = True
+            mqtt_delta_t = live_stream.get("last_delta_t_ms", 1000.0)
+            data_source_str = f"Workstation GPU via MQTT ({mqtt_delta_t:.0f}ms)"
 
     unit_clean = unit_system.lower()
     if unit_clean == "imperial":
@@ -267,7 +340,7 @@ def get_current_telemetry(unit_system: str = "metric"):
         "machine_health": health,
         "machine_status": stage_text,
         "actual_rul_days": int(row.get("Remaining_Useful_Life_Days", 0)),
-        "predicted_rul_days": int(row.get("Predicted_RUL", 0)),
+        "predicted_rul_days": pred_rul,
         "active_ai_model": row.get("Active_AI_Model", ai_engine.active_model_name),
         "inference_latency_ms": row.get("Inference_Latency_MS", 1.2),
         "model_version": row.get("Model_Version", "1.0"),
@@ -277,7 +350,10 @@ def get_current_telemetry(unit_system: str = "metric"):
         "subcomponents": row.get("Subcomponents", {}),
         "early_warning": row.get("Early_Warning", {}),
         "auto_play": sim_state.auto_play,
-        "simulation_speed": sim_state.simulation_speed
+        "simulation_speed": sim_state.simulation_speed,
+        "data_source": data_source_str,
+        "mqtt_live": is_live_mqtt,
+        "mqtt_delta_t_ms": mqtt_delta_t
     }
 
 @app.get("/api/early_warning")
