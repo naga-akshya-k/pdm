@@ -7,6 +7,8 @@ from typing import Optional, Dict, Any, List
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 # Set up logging
@@ -738,6 +740,20 @@ def get_legacy_model_evaluation():
         "scatter_plot": {"actual": [250, 200, 150, 80, 20], "predicted": [245, 203, 148, 85, 18]},
         "residuals": [5, -3, 2, -5, 2]
     }
+
+# Mount frontend production build (allows unified serving on port 8001 without Node.js)
+frontend_dist_dir = os.path.join(base_dir, "frontend", "dist")
+if os.path.exists(frontend_dist_dir):
+    assets_dir = os.path.join(frontend_dist_dir, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    @app.get("/{full_path:path}")
+    def serve_frontend_spa(full_path: str):
+        target = os.path.join(frontend_dist_dir, full_path)
+        if full_path and os.path.exists(target) and os.path.isfile(target):
+            return FileResponse(target)
+        return FileResponse(os.path.join(frontend_dist_dir, "index.html"))
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8001, reload=True)
