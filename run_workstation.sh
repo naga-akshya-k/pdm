@@ -28,4 +28,4 @@ echo "Press Ctrl+C to stop the platform."
 echo "=============================================================================="
 echo ""
 
-exec python3 -u -m uvicorn main:app --host 0.0.0.0 --port 8001
+exec python3 -u -m uvicorn main:app --host 0.0.0.0 --port 8001 --reload

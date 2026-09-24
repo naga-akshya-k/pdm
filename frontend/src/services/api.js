@@ -60,6 +60,11 @@ export const getDriftStatus = async () => {
   return res.data;
 };
 
+export const triggerDriftRecalibrate = async () => {
+  const res = await api.post('/drift/recalibrate');
+  return res.data;
+};
+
 export const getRegenerativeStatus = async () => {
   const res = await api.get('/regenerative/status');
   return res.data;

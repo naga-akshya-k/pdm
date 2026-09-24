@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { getDriftStatus } from '../services/api';
+import { getDriftStatus, triggerDriftRecalibrate } from '../services/api';
 import { ShieldAlert, AlertTriangle, RefreshCw, Sparkles, Download, LineChart, FileText, CheckCircle2, GitCompare } from 'lucide-react';
 import Plot from '../components/Plot';
 
-export default function DriftMonitor({ onNavigateToRegenerative }) {
+export default function DriftMonitor() {
   const [driftData, setDriftData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [recalibrating, setRecalibrating] = useState(false);
+  const [recalResult, setRecalResult] = useState(null);
   const [reportExported, setReportExported] = useState(false);
 
   const fetchDrift = async () => {
@@ -34,6 +36,28 @@ export default function DriftMonitor({ onNavigateToRegenerative }) {
     downloadAnchor.remove();
     setReportExported(true);
     setTimeout(() => setReportExported(false), 3000);
+  };
+
+  const handleRecalibrate = async () => {
+    try {
+      setRecalibrating(true);
+      const res = await triggerDriftRecalibrate();
+      setRecalResult({
+        type: 'success',
+        text: res.message || 'AI models successfully recalibrated and domain adapted!'
+      });
+      await fetchDrift();
+      setTimeout(() => setRecalResult(null), 8000);
+    } catch (err) {
+      console.error('Failed to recalibrate:', err);
+      setRecalResult({
+        type: 'error',
+        text: 'Failed to complete AI recalibration. Please verify backend status.'
+      });
+      setTimeout(() => setRecalResult(null), 8000);
+    } finally {
+      setRecalibrating(false);
+    }
   };
 
   const overallScore = driftData?.overall_drift_score || 0.0;
@@ -91,11 +115,40 @@ export default function DriftMonitor({ onNavigateToRegenerative }) {
             </div>
           </div>
           <button
-            onClick={onNavigateToRegenerative}
-            className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-xs transition-colors flex-shrink-0"
+            onClick={handleRecalibrate}
+            disabled={recalibrating}
+            className={`flex items-center gap-2 px-4 py-2.5 text-white text-xs font-bold rounded-lg shadow-xs transition-all flex-shrink-0 ${
+              recalibrating ? 'bg-amber-400 cursor-not-allowed' : 'bg-amber-600 hover:bg-amber-700 active:scale-95'
+            }`}
           >
-            <Sparkles className="w-4 h-4" /> Trigger Regenerative AI Recalibration
+            {recalibrating ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" /> Recalibrating Models...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" /> Trigger AI Recalibration
+              </>
+            )}
           </button>
+        </div>
+      )}
+
+      {/* Recalibration Result Banner */}
+      {recalResult && (
+        <div className={`p-4 rounded-xl text-sm font-semibold flex items-center justify-between gap-3 border shadow-xs animate-in fade-in duration-300 ${
+          recalResult.type === 'success'
+            ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+            : 'bg-red-50 border-red-300 text-red-900'
+        }`}>
+          <div className="flex items-center gap-2.5">
+            {recalResult.type === 'success' ? (
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            ) : (
+              <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            )}
+            <span>{recalResult.text}</span>
+          </div>
         </div>
       )}
 
