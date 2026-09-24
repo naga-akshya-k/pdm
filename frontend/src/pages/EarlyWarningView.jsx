@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getEarlyWarningAnalysis } from '../services/api';
-import { ShieldAlert, AlertTriangle, Clock, CheckCircle2, Flame, Activity, CheckSquare, Square, ChevronRight, Gauge } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, Clock, CheckCircle2, Flame, Activity, CheckSquare, Square, ChevronRight, Gauge, LineChart } from 'lucide-react';
 import Plot from '../components/Plot';
 
 export default function EarlyWarningView({ currentData }) {
@@ -62,16 +62,16 @@ export default function EarlyWarningView({ currentData }) {
       {/* Top Banner */}
       <div className="bg-white rounded-xl shadow-xs border border-gray-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-red-50 text-red-600 rounded-xl">
-            <ShieldAlert className="w-6 h-6" />
+          <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+            <LineChart className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-gray-900">Early Failure Detection & P-F Curve Diagnostics</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Predictive Analytics & Degradation Dynamics</h1>
               {getLevelBadge()}
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              Active Unit: <span className="font-bold text-gray-800">{currentData?.machine_name || 'Turbine Motor Unit A1'}</span> ({currentData?.machine_id || 'MCH-802X'})
+              Active Unit: <span className="font-bold text-gray-800">{currentData?.machine_name || 'Turbine Motor Unit A1'}</span> ({currentData?.machine_id || 'MCH-802X'}) &bull; Condition Analytics & P-F Curve
             </p>
           </div>
         </div>

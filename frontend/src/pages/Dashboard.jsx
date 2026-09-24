@@ -17,16 +17,22 @@ const Dashboard = ({ currentData, historyData, logs, liveTagsData, unitSystem = 
   return (
     <div className="space-y-5">
       {/* Top Banner with Machine Details & Active AI Model */}
-      <div className="bg-white rounded-xl shadow-xs border border-gray-200 p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-              {currentData?.machine_id || 'MCH-802X'}
-            </span>
-            <h2 className="text-base font-bold text-gray-900">{currentData?.machine_name || 'Turbine Motor Unit A1'}</h2>
-            <span className="text-xs text-gray-400">({currentData?.machine_type})</span>
+      <div className="bg-white rounded-xl shadow-xs border border-gray-200 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+            <Activity className="w-6 h-6" />
           </div>
-          <p className="text-xs text-gray-500 mt-0.5">Location: {currentData?.location || 'Plant Floor'}</p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-gray-900">Model Telemetry & SCADA Signal Ingress</h1>
+              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                {currentData?.machine_id || 'MCH-802X'}
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Asset: <span className="font-semibold text-gray-800">{currentData?.machine_name || 'Turbine Motor Unit A1'}</span> ({currentData?.machine_type || 'Gas Turbine Compressor'}) &bull; Location: {currentData?.location || 'Plant Floor (Bay 4)'}
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">

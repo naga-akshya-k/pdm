@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import TopBar from './components/TopBar';
 import Sidebar from './components/Sidebar';
-import FleetView from './pages/FleetView';
-import EarlyWarningView from './pages/EarlyWarningView';
 import Dashboard from './pages/Dashboard';
 import ModelBenchmark from './pages/ModelBenchmark';
+import EarlyWarningView from './pages/EarlyWarningView';
 import DriftMonitor from './pages/DriftMonitor';
-import RegenerativeStudio from './pages/RegenerativeStudio';
 import WorkOrders from './pages/WorkOrders';
 import {
   getStatus,
@@ -21,7 +19,7 @@ import {
 } from './services/api';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('telemetry');
   const [backendStatus, setBackendStatus] = useState(true);
   const [statusData, setStatusData] = useState(null);
   const [fleetData, setFleetData] = useState(null);
@@ -106,7 +104,7 @@ function App() {
       setCurrentData(curr);
       const flt = await getFleetOverview();
       setFleetData(flt);
-      setActiveTab('dashboard');
+      setActiveTab('telemetry');
     } catch (err) {
       console.error('Failed to select machine:', err);
     }
@@ -152,19 +150,8 @@ function App() {
 
         {/* Dynamic Main Operations View */}
         <main className="flex-1 overflow-y-auto p-6 max-w-[1680px] mx-auto w-full">
-          {activeTab === 'fleet' && (
-            <FleetView
-              fleetData={fleetData}
-              onSelectMachine={handleSelectMachine}
-              currentMachineId={currentData?.machine_id}
-            />
-          )}
-          {activeTab === 'early_warning' && (
-            <EarlyWarningView
-              currentData={currentData}
-            />
-          )}
-          {activeTab === 'dashboard' && (
+          {/* 1. Model Telemetry */}
+          {(activeTab === 'telemetry' || activeTab === 'dashboard') && (
             <Dashboard
               currentData={currentData}
               historyData={historyData}
@@ -173,20 +160,28 @@ function App() {
               unitSystem={unitSystem}
             />
           )}
-          {activeTab === 'benchmark' && (
+
+          {/* 2. Model Evaluation */}
+          {(activeTab === 'evaluation' || activeTab === 'benchmark') && (
             <ModelBenchmark
               onModelChange={() => {}}
             />
           )}
-          {activeTab === 'drift' && (
-            <DriftMonitor
-              onNavigateToRegenerative={() => setActiveTab('regenerative')}
+
+          {/* 3. Analytics */}
+          {(activeTab === 'analytics' || activeTab === 'early_warning') && (
+            <EarlyWarningView
+              currentData={currentData}
             />
           )}
-          {activeTab === 'regenerative' && (
-            <RegenerativeStudio />
+
+          {/* 4. Model Drifting */}
+          {activeTab === 'drift' && (
+            <DriftMonitor />
           )}
-          {activeTab === 'workorders' && (
+
+          {/* 5. Maintenance Actions */}
+          {(activeTab === 'maintenance' || activeTab === 'workorders') && (
             <WorkOrders
               currentMachineId={currentData?.machine_id}
             />

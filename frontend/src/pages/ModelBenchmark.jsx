@@ -50,9 +50,9 @@ export default function ModelBenchmark({ onModelChange }) {
             <Cpu className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Multi-Model AI Predictive Analytics Benchmark</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Model Evaluation & Algorithm Benchmarking</h1>
             <p className="text-sm text-gray-500">
-              Section 5 Candidate Evaluation Matrix: Compare Random Forest, Gradient Boosting, MLP, and SVR
+              Multi-Model Performance Matrix: Compare Random Forest, Gradient Boosting, MLP, and Support Vector Regression (MAE, RMSE, R²)
             </p>
           </div>
         </div>

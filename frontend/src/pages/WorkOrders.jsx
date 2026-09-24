@@ -72,9 +72,9 @@ export default function WorkOrders({ currentMachineId }) {
             <Wrench className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">CMMS Maintenance & Work Order Dispatcher</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Maintenance Actions & Prescriptive Work Orders</h1>
             <p className="text-sm text-gray-500">
-              ISO 13374 Condition-Based Servicing: Automated work orders, component health, and financial downtime ROI
+              ISO 13374 Prescriptive Actions: Automated CMMS work orders, component servicing priority, and downtime ROI savings
             </p>
           </div>
         </div>

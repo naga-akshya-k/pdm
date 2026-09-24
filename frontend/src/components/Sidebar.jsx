@@ -2,10 +2,8 @@ import React from 'react';
 import {
   Factory,
   AlertOctagon,
-  LayoutDashboard,
   Cpu,
   ShieldAlert,
-  Sparkles,
   Wrench,
   Play,
   Pause,
@@ -13,7 +11,10 @@ import {
   RotateCcw,
   Sliders,
   Wifi,
-  WifiOff
+  WifiOff,
+  Activity,
+  LineChart,
+  GitCompare
 } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 
@@ -29,6 +30,12 @@ const Sidebar = ({
 }) => {
   const ewLevel = currentData?.early_warning?.early_warning_level || 'GREEN';
 
+  const isTelemetry = activeTab === 'telemetry' || activeTab === 'dashboard';
+  const isEvaluation = activeTab === 'evaluation' || activeTab === 'benchmark';
+  const isAnalytics = activeTab === 'analytics' || activeTab === 'early_warning';
+  const isDrift = activeTab === 'drift';
+  const isMaintenance = activeTab === 'maintenance' || activeTab === 'workorders';
+
   return (
     <aside className="w-64 bg-white border-r border-gray-200 flex flex-col justify-between h-[calc(100vh-49px)] shadow-xs shrink-0 select-none">
       <div className="p-3.5 space-y-4 overflow-y-auto">
@@ -38,99 +45,94 @@ const Sidebar = ({
             <Factory className="w-4 h-4 text-blue-600" />
             <span>Industrial PdM Platform</span>
           </h1>
-          <p className="text-[11px] text-gray-400">ISO 13374 Condition-Based PDM</p>
+          <p className="text-[11px] text-gray-400">Turbine Motor Condition Intelligence</p>
         </div>
 
         {/* Navigation Tabs */}
         <nav className="space-y-1">
+          {/* 1. Model Telemetry */}
           <button
-            onClick={() => setActiveTab('dashboard')}
-            className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
-              activeTab === 'dashboard'
-                ? 'bg-blue-50 text-blue-700 border border-blue-200 font-bold'
+            onClick={() => setActiveTab('telemetry')}
+            className={`w-full flex items-center space-x-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
+              isTelemetry
+                ? 'bg-blue-50 text-blue-700 border border-blue-200 font-bold shadow-xs'
                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             }`}
           >
-            <LayoutDashboard className="w-4 h-4 text-blue-600" />
-            <span>Turbine Motor Telemetry</span>
+            <Activity className="w-4 h-4 text-blue-600 shrink-0" />
+            <div className="flex flex-col text-left">
+              <span>Model Telemetry</span>
+              <span className="text-[10px] text-gray-400 font-normal">Real-Time SCADA Ingress</span>
+            </div>
           </button>
 
-          {/* Early Warning Tab with dynamic badge */}
+          {/* 2. Model Evaluation */}
           <button
-            onClick={() => setActiveTab('early_warning')}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
-              activeTab === 'early_warning'
-                ? 'bg-red-50 text-red-700 border border-red-200 font-bold'
+            onClick={() => setActiveTab('evaluation')}
+            className={`w-full flex items-center space-x-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
+              isEvaluation
+                ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold shadow-xs'
+                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+            }`}
+          >
+            <Cpu className="w-4 h-4 text-indigo-600 shrink-0" />
+            <div className="flex flex-col text-left">
+              <span>Model Evaluation</span>
+              <span className="text-[10px] text-gray-400 font-normal">Algorithm Benchmarking</span>
+            </div>
+          </button>
+
+          {/* 3. Analytics */}
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
+              isAnalytics
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold shadow-xs'
                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             }`}
           >
             <div className="flex items-center space-x-2.5">
-              <AlertOctagon className="w-4 h-4 text-red-600" />
-              <span>Early Failure & P-F</span>
+              <LineChart className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="flex flex-col text-left">
+                <span>Analytics</span>
+                <span className="text-[10px] text-gray-400 font-normal">ISO 10816 & P-F Curve</span>
+              </div>
             </div>
             {ewLevel !== 'GREEN' && (
               <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
             )}
           </button>
 
-          <button
-            onClick={() => setActiveTab('fleet')}
-            className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
-              activeTab === 'fleet'
-                ? 'bg-blue-50 text-blue-700 border border-blue-200 font-bold'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-            }`}
-          >
-            <Factory className="w-4 h-4 text-slate-600" />
-            <span>Asset Specs & Diagnostics</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('benchmark')}
-            className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
-              activeTab === 'benchmark'
-                ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-            }`}
-          >
-            <Cpu className="w-4 h-4 text-indigo-600" />
-            <span>Multi-Model AI Engine</span>
-          </button>
-
+          {/* 4. Model Drifting */}
           <button
             onClick={() => setActiveTab('drift')}
-            className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
-              activeTab === 'drift'
-                ? 'bg-amber-50 text-amber-700 border border-amber-200 font-bold'
+            className={`w-full flex items-center space-x-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
+              isDrift
+                ? 'bg-amber-50 text-amber-700 border border-amber-200 font-bold shadow-xs'
                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             }`}
           >
-            <ShieldAlert className="w-4 h-4 text-amber-600" />
-            <span>Reliability & Drift Studio</span>
+            <GitCompare className="w-4 h-4 text-amber-600 shrink-0" />
+            <div className="flex flex-col text-left">
+              <span>Model Drifting</span>
+              <span className="text-[10px] text-gray-400 font-normal">PSI & Statistical Shifts</span>
+            </div>
           </button>
 
+          {/* 5. Maintenance Actions */}
           <button
-            onClick={() => setActiveTab('regenerative')}
-            className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
-              activeTab === 'regenerative'
-                ? 'bg-purple-50 text-purple-700 border border-purple-200 font-bold'
+            onClick={() => setActiveTab('maintenance')}
+            className={`w-full flex items-center space-x-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
+              isMaintenance
+                ? 'bg-slate-100 text-slate-900 border border-slate-300 font-bold shadow-xs'
                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             }`}
           >
-            <Sparkles className="w-4 h-4 text-purple-600" />
-            <span>Regenerative AI Layer</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('workorders')}
-            className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
-              activeTab === 'workorders'
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-            }`}
-          >
-            <Wrench className="w-4 h-4 text-emerald-600" />
-            <span>CMMS & Work Orders</span>
+            <Wrench className="w-4 h-4 text-slate-700 shrink-0" />
+            <div className="flex flex-col text-left">
+              <span>Maintenance Actions</span>
+              <span className="text-[10px] text-gray-400 font-normal">CMMS Work Orders</span>
+            </div>
           </button>
         </nav>
 

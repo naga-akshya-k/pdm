@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getDriftStatus } from '../services/api';
-import { ShieldAlert, AlertTriangle, RefreshCw, Sparkles, Download, LineChart, FileText, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, RefreshCw, Sparkles, Download, LineChart, FileText, CheckCircle2, GitCompare } from 'lucide-react';
 import Plot from '../components/Plot';
 
 export default function DriftMonitor({ onNavigateToRegenerative }) {
@@ -51,12 +51,12 @@ export default function DriftMonitor({ onNavigateToRegenerative }) {
       <div className="bg-white rounded-xl shadow-xs border border-gray-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
-            <ShieldAlert className="w-6 h-6" />
+            <GitCompare className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Statistical Model Drift & Reliability Studio</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Model Drifting & Statistical Reliability Monitor</h1>
             <p className="text-sm text-gray-500">
-              Section 8 Architecture: Continuous Population Stability Index (PSI) & Kolmogorov-Smirnov distribution tracking
+              Continuous Population Stability Index (PSI), Kolmogorov-Smirnov distribution tracking, and automated retraining triggers
             </p>
           </div>
         </div>
