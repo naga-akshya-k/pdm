@@ -56,8 +56,11 @@ echo  - Target Machine ID     : MCH-802X
 echo  - Nominal Cadence (Dt)  : 1000 ms (1 Hz)
 echo  - Supported Tag IDs     : 8 standard industrial tags
 echo.
-echo  To run the test publisher from this workstation:
-echo    python scripts/test_gpu_sender.py --interval 1.0
+echo  To stream live telemetry from this workstation:
+echo    python scripts/test_live_stream.py --seconds 60
+echo.
+echo  To stream simulated degradation/fault:
+echo    python scripts/test_live_stream.py --seconds 60 --fault
 echo.
 echo  Keep the opened command windows running while using the system.
 echo ==============================================================================
