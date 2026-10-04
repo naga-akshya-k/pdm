@@ -1,0 +1,35 @@
+# Global Platform Settings
+
+system:
+  app_name: "Industrial Predictive Maintenance Platform (PdM v3)"
+  version: "3.0.0"
+  environment: "production"
+  log_level: "INFO"
+
+storage:
+  database_type: "sqlite"
+  db_path: "data/pdm_timeseries.db"
+  max_history_days: 90
+  in_memory_cache_size: 1000
+
+mqtt:
+  broker_host: "127.0.0.1"
+  broker_port: 1883
+  default_topic: "plant/bay4/+/telemetry"
+  watchdog_timeout_seconds: 3.0
+  reconnect_min_delay_s: 1
+  reconnect_max_delay_s: 10
+
+pipeline:
+  default_window_size: 10          # Number of samples per time window (e.g., 10 seconds at 1 Hz)
+  window_stride: 1                 # Stride step for sliding window
+  drift_sample_size: 300           # Number of samples to test for statistical drift
+  ks_p_value_threshold: 0.05       # P-value threshold for KS test
+  psi_alert_threshold: 0.25        # Population Stability Index threshold for significant drift
+  anomaly_contamination: 0.05      # Prior expectation of anomaly fraction in normal baselines
+
+mlops:
+  active_model_name: "Random Forest"
+  production_version: "v1.0"
+  models_dir: "models"
+  registry_file: "models/registry.json"

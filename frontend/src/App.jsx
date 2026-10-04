@@ -6,6 +6,8 @@ import ModelBenchmark from './pages/ModelBenchmark';
 import EarlyWarningView from './pages/EarlyWarningView';
 import DriftMonitor from './pages/DriftMonitor';
 import WorkOrders from './pages/WorkOrders';
+import MLOpsGovernance from './pages/MLOpsGovernance';
+import FleetView from './pages/FleetView';
 import {
   getStatus,
   getFleetOverview,
@@ -29,7 +31,7 @@ function App() {
   const [liveTagsData, setLiveTagsData] = useState(null);
   const [logs, setLogs] = useState([]);
   const [speed, setSpeed] = useState(1.0);
-  const [autoPlay, setAutoPlay] = useState(false);
+  const [autoPlay, setAutoPlay] = useState(true);
   const [unitSystem, setUnitSystem] = useState('metric');
 
   const consecutiveFailuresRef = useRef(0);
@@ -71,8 +73,8 @@ function App() {
           setMaintenanceData(maint);
           setFleetData(flt);
           setLiveTagsData(tagsData);
-          setAutoPlay(curr.auto_play);
-          setSpeed(curr.simulation_speed);
+          if (curr.auto_play !== undefined) setAutoPlay(curr.auto_play);
+          if (curr.simulation_speed !== undefined) setSpeed(curr.simulation_speed);
 
           consecutiveFailuresRef.current = 0;
           setBackendStatus(true);
@@ -150,7 +152,7 @@ function App() {
 
         {/* Dynamic Main Operations View */}
         <main className="flex-1 overflow-y-auto p-6 max-w-[1680px] mx-auto w-full">
-          {/* 1. Model Telemetry */}
+          {/* 1. Live Telemetry */}
           {(activeTab === 'telemetry' || activeTab === 'dashboard') && (
             <Dashboard
               currentData={currentData}
@@ -161,29 +163,36 @@ function App() {
             />
           )}
 
-          {/* 2. Model Evaluation */}
-          {(activeTab === 'evaluation' || activeTab === 'benchmark') && (
-            <ModelBenchmark
-              onModelChange={() => {}}
-            />
-          )}
-
-          {/* 3. Analytics */}
+          {/* 2. Anomaly & Diagnostics */}
           {(activeTab === 'analytics' || activeTab === 'early_warning') && (
             <EarlyWarningView
               currentData={currentData}
             />
           )}
 
-          {/* 4. Model Drifting */}
+          {/* 3. Maintenance Recommendations */}
+          {(activeTab === 'maintenance' || activeTab === 'workorders') && (
+            <WorkOrders
+              currentMachineId={currentData?.machine_id}
+            />
+          )}
+
+          {/* 4. Drift Monitoring */}
           {activeTab === 'drift' && (
             <DriftMonitor />
           )}
 
-          {/* 5. Maintenance Actions */}
-          {(activeTab === 'maintenance' || activeTab === 'workorders') && (
-            <WorkOrders
-              currentMachineId={currentData?.machine_id}
+          {/* 5. MLOps & Model Governance */}
+          {(activeTab === 'mlops' || activeTab === 'evaluation' || activeTab === 'benchmark') && (
+            <MLOpsGovernance />
+          )}
+
+          {/* 6. Plant Fleet Overview */}
+          {activeTab === 'fleet' && (
+            <FleetView
+              fleetData={fleetData}
+              onSelectMachine={handleSelectMachine}
+              currentData={currentData}
             />
           )}
         </main>
