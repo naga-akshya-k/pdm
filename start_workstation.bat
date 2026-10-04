@@ -9,12 +9,18 @@ echo ===========================================================================
 echo.
 
 :: Check Python
-python --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo [ERROR] Python is not installed or not in system PATH.
-    echo Please install Python 3.10+ and run again.
-    pause
-    exit /b 1
+py -3.11 --version >nul 2>&1
+if %errorlevel% equ 0 (
+    set "PY_CMD=py -3.11"
+) else (
+    python --version >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo [ERROR] Python is not installed or not in system PATH.
+        echo Please install Python 3.10+ and run again.
+        pause
+        exit /b 1
+    )
+    set "PY_CMD=python"
 )
 
 :: Check Node.js
@@ -27,7 +33,7 @@ if %errorlevel% neq 0 (
 )
 
 echo [1/3] Starting FastAPI Backend & AI Inference Engine (Port 8001)...
-start "PDM Backend - Turbine Motor A1" cmd /c "python -u -m uvicorn main:app --host 0.0.0.0 --port 8001"
+start "PDM Backend - Turbine Motor A1" cmd /c "%PY_CMD% -u -m uvicorn main:app --host 0.0.0.0 --port 8001"
 
 echo Waiting 5 seconds for AI models and backend to initialize...
 timeout /t 5 /nobreak >nul
