@@ -1,0 +1,91 @@
+# Machine Asset Registry and Engineering Baselines
+
+machines:
+  MCH-802X:
+    name: "Turbine Motor Unit A1"
+    type: "Gas Turbine Generator"
+    location: "Power Generation Hall - Bay 4"
+    iso_machine_class: "Class III (Large Rigid Foundation > 300 kW)"
+    nominal_rpm: 3000.0
+    sampling_interval_ms: 1000
+    subcomponents:
+      - "bearing_assembly"
+      - "stator_windings"
+      - "rotor_balance"
+      - "cooling_system"
+      - "hydraulic_seals"
+    baselines:
+      Temperature: 62.0
+      Vibration: 0.20
+      Motor_Current: 8.0
+      Acoustic_Noise: 42.0
+      Pressure: 4.5
+      RPM: 3000.0
+      Frequency: 50.0
+      Load: 15.0
+
+  PMP-401B:
+    name: "Centrifugal Slurry Pump B2"
+    type: "Heavy Slurry Pump"
+    location: "Mineral Processing Line 2"
+    iso_machine_class: "Class II (Medium Machines 15-300 kW)"
+    nominal_rpm: 1480.0
+    sampling_interval_ms: 1000
+    subcomponents:
+      - "impeller_assembly"
+      - "mechanical_seals"
+      - "drive_bearings"
+      - "hydraulic_casing"
+    baselines:
+      Temperature: 48.0
+      Vibration: 0.35
+      Motor_Current: 14.2
+      Acoustic_Noise: 56.0
+      Pressure: 6.2
+      RPM: 1480.0
+      Frequency: 25.0
+      Load: 40.0
+
+  CMP-605C:
+    name: "Reciprocating Compressor C3"
+    type: "Reciprocating Gas Compressor"
+    location: "Petrochemical Unit 1"
+    iso_machine_class: "Class IV (Reciprocating Equipment)"
+    nominal_rpm: 720.0
+    sampling_interval_ms: 1000
+    subcomponents:
+      - "crankshaft_bearings"
+      - "cylinder_valves"
+      - "piston_rings"
+      - "crosshead_guides"
+    baselines:
+      Temperature: 75.0
+      Vibration: 0.85
+      Motor_Current: 28.0
+      Acoustic_Noise: 68.0
+      Pressure: 12.5
+      RPM: 720.0
+      Frequency: 12.0
+      Load: 65.0
+
+  CNC-900D:
+    name: "High-Speed Spindle D4"
+    type: "Precision Milling Spindle"
+    location: "Aerospace Precision Machining Cell 3"
+    iso_machine_class: "Class I (Small Precision Spindles)"
+    nominal_rpm: 12000.0
+    sampling_interval_ms: 1000
+    subcomponents:
+      - "hybrid_ceramic_bearings"
+      - "spindle_motor"
+      - "collet_clamping_system"
+      - "chilled_cooling_jacket"
+    baselines:
+      Temperature: 38.0
+      Vibration: 0.12
+      Motor_Current: 4.5
+      Acoustic_Noise: 36.0
+      Pressure: 3.2
+      RPM: 12000.0
+      Frequency: 200.0
+      Load: 25.0

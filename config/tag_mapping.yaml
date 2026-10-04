@@ -1,0 +1,93 @@
+# Industrial Tag ID to Standard Internal Feature Mapping
+# Configurable per machine asset or generic fallback
+
+tags:
+  TURB_MTR_DE_VIB_RMS:
+    feature_name: "Vibration"
+    sensor_type: "vibration"
+    description: "Drive-End Bearing Radial Vibration RMS"
+    unit: "mm/s"
+    valid_min: 0.0
+    valid_max: 25.0
+    iso_alert_threshold: 1.80
+
+  TURB_MTR_VIB_FREQ_01:
+    feature_name: "Frequency"
+    sensor_type: "vibration_frequency"
+    description: "Dominant Rotational Spectral Peak Frequency"
+    unit: "Hz"
+    valid_min: 10.0
+    valid_max: 200.0
+    iso_alert_threshold: 75.0
+
+  TURB_MTR_STATOR_TEMP:
+    feature_name: "Temperature"
+    sensor_type: "temperature"
+    description: "Stator Winding Core Temperature"
+    unit: "°C"
+    valid_min: -10.0
+    valid_max: 180.0
+    iso_alert_threshold: 95.0
+
+  TURB_MTR_PHASE_CURRENT:
+    feature_name: "Motor_Current"
+    sensor_type: "current"
+    description: "3-Phase Motor Stator Current"
+    unit: "A"
+    valid_min: 0.0
+    valid_max: 100.0
+    iso_alert_threshold: 22.0
+
+  TURB_MTR_ACOUSTIC_DB:
+    feature_name: "Acoustic_Noise"
+    sensor_type: "acoustic"
+    description: "High-Frequency Ultrasonic Acoustic Emission"
+    unit: "dB"
+    valid_min: 10.0
+    valid_max: 130.0
+    iso_alert_threshold: 88.0
+
+  TURB_MTR_LUBE_OIL_PRES:
+    feature_name: "Pressure"
+    sensor_type: "pressure"
+    description: "Bearing Lubricating Oil Feed Supply Pressure"
+    unit: "bar"
+    valid_min: 0.0
+    valid_max: 20.0
+    iso_alert_threshold: 2.2
+
+  TURB_MTR_SHAFT_SPEED:
+    feature_name: "RPM"
+    sensor_type: "speed"
+    description: "Tachometer Rotational Shaft Speed"
+    unit: "RPM"
+    valid_min: 0.0
+    valid_max: 6000.0
+    iso_alert_threshold: 2600.0
+
+  TURB_MTR_KW_LOAD:
+    feature_name: "Load"
+    sensor_type: "load"
+    description: "Shaft Active Operating Power Load"
+    unit: "%"
+    valid_min: 0.0
+    valid_max: 150.0
+    iso_alert_threshold: 105.0
+
+# Generic fallback mappings for variable machine IDs
+generic_sensor_mapping:
+  vibration: "Vibration"
+  vib: "Vibration"
+  temperature: "Temperature"
+  temp: "Temperature"
+  current: "Motor_Current"
+  motor_current: "Motor_Current"
+  acoustic: "Acoustic_Noise"
+  noise: "Acoustic_Noise"
+  pressure: "Pressure"
+  pres: "Pressure"
+  rpm: "RPM"
+  speed: "RPM"
+  frequency: "Frequency"
+  freq: "Frequency"
+  load: "Load"

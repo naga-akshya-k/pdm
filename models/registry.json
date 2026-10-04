@@ -1,0 +1,41 @@
+{
+  "active_version": "v1.0",
+  "candidate_version": "v1.1",
+  "versions": {
+    "v1.0": {
+      "version": "v1.0",
+      "algorithm": "Random Forest",
+      "model_file": "candidate_random_forest.pkl",
+      "trained_at": "2026-09-01 10:00:00",
+      "dataset_size": 3500,
+      "metrics": {
+        "mae": 28.5,
+        "rmse": 39.2,
+        "r2_score": 0.865
+      },
+      "status": "PRODUCTION",
+      "approved_by": "Commissioning Lead",
+      "notes": "Initial factory commissioning model"
+    },
+    "v1.1": {
+      "version": "v1.1",
+      "algorithm": "Gradient Boosting",
+      "model_file": "model_v1_1.pkl",
+      "trained_at": "2026-10-04 22:21:18",
+      "dataset_size": 2500,
+      "metrics": {
+        "mae": 0.0,
+        "rmse": 0.0,
+        "r2_score": 1.0
+      },
+      "comparison_to_production": {
+        "delta_mae": -28.5,
+        "delta_r2": 0.135,
+        "improved": true
+      },
+      "status": "WAITING_FOR_ENGINEER_APPROVAL",
+      "approved_by": null,
+      "notes": "Candidate generated via continuous MLOps improvement pipeline"
+    }
+  }
+}
