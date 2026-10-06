@@ -10,16 +10,17 @@ import datetime
 import urllib.request
 import argparse
 
-def run_stream(seconds=60, interval=1.0, fault=False):
+def run_stream(host="127.0.0.1", port=8001, seconds=60, interval=1.0, fault=False):
+    target_url = f"http://{host}:{port}/api/mqtt/inject"
     print("=" * 65)
     print(" WORKSTATION GPU TELEMETRY STREAM SIMULATOR")
-    print(f" Target Endpoint : http://127.0.0.1:8001/api/mqtt/inject")
+    print(f" Target Endpoint : {target_url}")
     print(f" Asset           : Turbine Motor Unit A1 (MCH-802X)")
     print(f" Stream Cadence  : {interval * 1000:.0f} ms (Delta-t)")
     print(f" Stream Duration : {seconds} seconds ({int(seconds / interval)} packets)")
     print(f" Operating State : {'FAULT / DEGRADATION INJECTION' if fault else 'NORMAL NOMINAL STREAM'}")
     print("=" * 65)
-    print("\nStarting transmission... Check your browser at http://localhost:5173 !\n")
+    print(f"\nStarting transmission to {target_url}...\n")
 
     start_time = time.time()
     step = 1
@@ -53,7 +54,7 @@ def run_stream(seconds=60, interval=1.0, fault=False):
 
         try:
             req = urllib.request.Request(
-                "http://127.0.0.1:8001/api/mqtt/inject",
+                target_url,
                 data=json.dumps(packet).encode("utf-8"),
                 headers={"Content-Type": "application/json"}
             )
@@ -82,9 +83,11 @@ def run_stream(seconds=60, interval=1.0, fault=False):
     print("Dashboard safely returns to Digital Twin baseline.")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Workstation Telemetry Streamer")
+    parser.add_argument("--host", type=str, default="127.0.0.1", help="Target API Host IP (e.g. 172.31.99.24 or 127.0.0.1)")
+    parser.add_argument("--port", type=int, default=8001, help="Target API Port (default: 8001)")
     parser.add_argument("--seconds", type=int, default=45, help="Duration to stream in seconds (default: 45s)")
     parser.add_argument("--interval", type=float, default=1.0, help="Cadence interval in seconds (default: 1.0s)")
     parser.add_argument("--fault", action="store_true", help="Inject high-vibration bearing fault")
     args = parser.parse_args()
-    run_stream(seconds=args.seconds, interval=args.interval, fault=args.fault)
+    run_stream(host=args.host, port=args.port, seconds=args.seconds, interval=args.interval, fault=args.fault)
