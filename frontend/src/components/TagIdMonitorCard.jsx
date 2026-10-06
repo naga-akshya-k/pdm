@@ -130,13 +130,14 @@ export default function TagIdMonitorCard({ liveTagsData }) {
         {tags.map((tag) => {
           const st = getTagStatus(tag);
           const Icon = st.icon || CheckCircle2;
+          const isTagActive = Boolean(tag.is_active_streaming);
           return (
             <div
               key={tag.tag_id}
               className={`p-3.5 rounded-xl border ${st.border} ${st.bg} flex flex-col justify-between transition-all duration-300 hover:scale-[1.01] ${
-                isLive
-                  ? (st.label.startsWith('CRITICAL') ? 'ring-2 ring-red-500 shadow-lg shadow-red-900/30' : (st.label === 'WARNING' ? 'ring-2 ring-amber-500 shadow-md shadow-amber-900/20' : 'ring-2 ring-emerald-500 shadow-md shadow-emerald-900/30 bg-emerald-950/20'))
-                  : ''
+                isTagActive
+                  ? (st.label.startsWith('CRITICAL') ? 'ring-2 ring-red-500 shadow-lg shadow-red-900/40 bg-red-950/30' : (st.label === 'WARNING' ? 'ring-2 ring-amber-500 shadow-md shadow-amber-900/30 bg-amber-950/20' : 'ring-2 ring-emerald-500 shadow-md shadow-emerald-900/40 bg-emerald-950/30 scale-[1.02]'))
+                  : 'opacity-90'
               }`}
             >
               <div>
@@ -152,13 +153,17 @@ export default function TagIdMonitorCard({ liveTagsData }) {
                 <div className="text-[11px] text-slate-400 mt-1 line-clamp-1" title={tag.description}>
                   {tag.description}
                 </div>
-                {isLive && (
+                {isTagActive ? (
                   <div className="text-[10px] font-mono text-emerald-400 mt-1.5 flex items-center gap-1.5 font-bold">
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                     </span>
                     <span>INGESTING LIVE</span>
+                  </div>
+                ) : (
+                  <div className="text-[10px] font-mono text-slate-500 mt-1.5">
+                    <span>IDLE / SYNCHRONIZED</span>
                   </div>
                 )}
               </div>

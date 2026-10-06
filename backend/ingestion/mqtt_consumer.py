@@ -46,6 +46,7 @@ class IndustrialMQTTConsumer:
         self.last_arrival_time = None
         self.last_delta_t_ms = None
         self.jitter_history = []
+        self.tag_last_arrival: Dict[str, float] = {}  # { tag_id: timestamp }
 
     def _on_connect(self, client, userdata, flags, rc, properties=None):
         if rc == 0:
@@ -119,6 +120,16 @@ class IndustrialMQTTConsumer:
                     k: v for k, v in data.items()
                     if k not in ["machine_id", "timestamp", "sampling_interval_ms", "sequence_id", "is_simulation", "is_replay"]
                 }
+
+        # Record individual active tag arrival timestamps
+        if not is_simulation:
+            with self._lock:
+                for k in tags_dict.keys():
+                    self.tag_last_arrival[str(k)] = arrival_time
+                    # Also record by canonical feature name
+                    feat_info = self.tag_mapper.tags.get(str(k))
+                    if feat_info:
+                        self.tag_last_arrival[feat_info["feature_name"]] = arrival_time
 
         # 4. Map Tags to Standard Internal Features
         raw_features, audit = self.tag_mapper.map_payload(tags_dict)

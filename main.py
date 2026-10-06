@@ -8,6 +8,7 @@ import os
 import asyncio
 import logging
 import datetime
+import time
 from typing import Optional, Dict, Any, List
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -63,7 +64,7 @@ replayer = HistoricalTelemetryReplayer(
 
 class AppState:
     def __init__(self):
-        self.auto_play = True
+        self.auto_play = False  # Keep simulation paused until operator explicitly clicks Resume
         self.simulation_speed = 1.0
         self.selected_machine_id = "MCH-802X"
 
@@ -75,7 +76,6 @@ def tick_simulation_machine(m_id: str):
     if not sim:
         return
     raw_step = sim.step()
-
     packet = {
         "machine_id": m_id,
         "machine_name": sim.config["name"],
@@ -105,8 +105,10 @@ async def background_simulation_loop():
     while True:
         try:
             watchdog_status = mqtt_consumer.watchdog.get_status()
-            # Only tick simulation if not actively receiving real MQTT packets
-            if watchdog_status["current_mode"] != "REAL INDUSTRIAL DATA" or not watchdog_status["is_stream_live"]:
+            # Simulation NEVER runs while receiving real industrial packets
+            if watchdog_status["current_mode"] == "REAL INDUSTRIAL DATA" and watchdog_status["is_stream_live"]:
+                app_state.auto_play = False  # Freeze simulation during live ingress
+            else:
                 if app_state.auto_play and not replayer.is_replaying:
                     for m_id in FLEET_CONFIGS:
                         tick_simulation_machine(m_id)
@@ -365,10 +367,18 @@ def get_live_tags():
         "Load": (10.0, 85.0),
     }
 
+    now_ts = time.time()
     for tag_id, meta in mapper.tags.items():
         feat = meta["feature_name"]
         val = feats.get(feat, 0.0)
         norm_min, norm_max = norm_ranges.get(feat, (meta.get("valid_min", 0.0), meta.get("valid_max", 100.0)))
+        
+        # Check if this specific tag was received recently (within 3.0s window)
+        tag_ts = mqtt_consumer.tag_last_arrival.get(tag_id) or mqtt_consumer.tag_last_arrival.get(feat)
+        is_tag_active = False
+        if tag_ts is not None and (now_ts - tag_ts) <= 3.0 and watchdog_st["is_stream_live"]:
+            is_tag_active = True
+
         tag_list.append({
             "tag_id": tag_id,
             "feature_name": feat,
@@ -380,6 +390,7 @@ def get_live_tags():
             "normal_min": norm_min,
             "normal_max": norm_max,
             "crit_threshold": meta.get("iso_alert_threshold"),
+            "is_active_streaming": is_tag_active,
             "source": latest.get("data_source", "SIMULATION") if latest else "SIMULATION"
         })
     return {
