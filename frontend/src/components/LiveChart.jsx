@@ -19,13 +19,23 @@ const LiveChart = ({ historyData }) => {
   };
 
   const config = metricConfigs[selectedMetric] || metricConfigs.Temperature;
-  const trend = historyData?.[config.key] || { actual: [], predicted_future: [] };
-  const healthTrend = historyData?.machine_health_trend?.actual || [];
+  
+  // Format data whether historyData is an array of records or trend object
+  let actualVals = [];
+  let futureVals = [];
 
-  const xHist = trend.actual.map((_, i) => i + 1);
+  if (Array.isArray(historyData)) {
+    actualVals = historyData.map(r => Number(r[selectedMetric] ?? r[config.key] ?? 0));
+  } else if (historyData && typeof historyData === 'object') {
+    const trend = historyData[config.key] || historyData[selectedMetric] || { actual: [], predicted_future: [] };
+    actualVals = Array.isArray(trend.actual) ? trend.actual : [];
+    futureVals = Array.isArray(trend.predicted_future) ? trend.predicted_future : [];
+  }
+
+  const xHist = actualVals.map((_, i) => i + 1);
   const latestDay = xHist.length > 0 ? xHist[xHist.length - 1] : 1;
-  const xFuture = trend.actual.length > 0
-    ? trend.predicted_future.map((_, i) => latestDay + i)
+  const xFuture = actualVals.length > 0
+    ? futureVals.map((_, i) => latestDay + i)
     : [];
 
   const visibleMin = Math.max(1, latestDay - 50);
@@ -69,7 +79,7 @@ const LiveChart = ({ historyData }) => {
           data={[
             {
               x: xHist,
-              y: trend.actual,
+              y: actualVals,
               type: 'scatter',
               mode: 'lines',
               name: 'Actual Reading',
@@ -77,7 +87,7 @@ const LiveChart = ({ historyData }) => {
             },
             {
               x: xFuture,
-              y: trend.predicted_future,
+              y: futureVals,
               type: 'scatter',
               mode: 'lines',
               name: 'Projected Trend',
