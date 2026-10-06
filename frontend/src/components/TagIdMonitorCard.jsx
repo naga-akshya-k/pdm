@@ -86,7 +86,7 @@ export default function TagIdMonitorCard({ liveTagsData }) {
               : 'bg-slate-800 text-slate-300 border-slate-700'
           }`}>
             <span className={`w-2 h-2 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
-            <span>{isLive ? `GPU STREAM ACTIVE [${Math.round(deltaT || 1000)}ms]` : 'DIGITAL TWIN SIMULATION'}</span>
+            <span>{isLive ? `INDUSTRIAL STREAM ACTIVE [${Math.round(deltaT || 1000)}ms]` : 'DIGITAL TWIN SIMULATION'}</span>
           </div>
 
           <button
@@ -105,7 +105,7 @@ export default function TagIdMonitorCard({ liveTagsData }) {
         <div className="mt-3 bg-emerald-950/90 border border-emerald-500/80 p-3 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between text-xs text-emerald-200 gap-2 shadow-inner">
           <div className="flex items-center space-x-2">
             <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
-            <span className="font-bold tracking-wide">LIVE DATA TRANSMISSION ACTIVE (Source: Workstation GPU via Tag IDs)</span>
+            <span className="font-bold tracking-wide">LIVE INDUSTRIAL DATA INGRESS (Telemetry Stream Active via Tag IDs)</span>
           </div>
           <div className="font-mono text-[11px] text-emerald-300 flex items-center space-x-3">
             <span>Measured Cadence: <strong className="text-white font-bold">{Math.round(deltaT || 1000)} ms</strong></span>
