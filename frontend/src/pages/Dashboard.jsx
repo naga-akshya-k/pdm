@@ -68,16 +68,16 @@ const Dashboard = ({ currentData, historyData, logs, liveTagsData, unitSystem = 
         <div className="lg:col-span-2">
           <MetricCard
             title="Turbine Motor Maintenance Status"
-            badgeComponent={<StatusBadge status={currentData?.alert_status || 'Healthy'} />}
+            badgeComponent={<StatusBadge status={currentData?.machine_status || currentData?.alert_status || 'Healthy'} />}
           />
         </div>
 
         <div className="lg:col-span-2">
           <MetricCard
             title="Turbine Operational State"
-            value={currentData?.active_event !== 'None' ? currentData?.active_event : 'Nominal Baseline'}
+            value={currentData?.fault_diagnosis && currentData?.fault_diagnosis !== 'Nominal Baseline' ? currentData?.fault_diagnosis : (currentData?.active_event && currentData?.active_event !== 'None' ? currentData?.active_event : 'Nominal Baseline')}
             icon={ShieldAlert}
-            valueColor={currentData?.active_event !== 'None' ? 'text-red-600' : 'text-emerald-600'}
+            valueColor={(currentData?.fault_diagnosis && currentData?.fault_diagnosis !== 'Nominal Baseline') || (currentData?.active_event && currentData?.active_event !== 'None') ? 'text-red-600' : 'text-emerald-600'}
           />
         </div>
       </div>

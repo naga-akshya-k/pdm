@@ -344,24 +344,49 @@ def get_logs(unit_system: str = "metric"):
 def get_live_tags():
     latest = pipeline.get_latest_inference(app_state.selected_machine_id)
     feats = latest.get("features", {}) if latest else {}
+    watchdog_st = mqtt_consumer.watchdog.get_status()
     from backend.ingestion.tag_mapper import IndustrialTagMapper
     mapper = IndustrialTagMapper()
     tag_list = []
+    
+    # Baselines for normal ranges
+    cfg = FLEET_CONFIGS.get(app_state.selected_machine_id, FLEET_CONFIGS["MCH-802X"])
+    baselines = cfg.get("baselines", {})
+    
+    # Sensible operational standard margins for each feature
+    norm_ranges = {
+        "Vibration": (0.0, 1.8),
+        "Frequency": (48.0, 52.0),
+        "Temperature": (40.0, 80.0),
+        "Motor_Current": (5.0, 15.0),
+        "Acoustic_Noise": (35.0, 65.0),
+        "Pressure": (3.5, 5.5),
+        "RPM": (2850.0, 3150.0),
+        "Load": (10.0, 85.0),
+    }
+
     for tag_id, meta in mapper.tags.items():
         feat = meta["feature_name"]
+        val = feats.get(feat, 0.0)
+        norm_min, norm_max = norm_ranges.get(feat, (meta.get("valid_min", 0.0), meta.get("valid_max", 100.0)))
         tag_list.append({
             "tag_id": tag_id,
             "feature_name": feat,
             "description": meta.get("description", feat),
             "unit": meta.get("unit", ""),
-            "current_value": feats.get(feat, 0.0),
+            "current_value": val,
             "valid_min": meta.get("valid_min", 0.0),
             "valid_max": meta.get("valid_max", 100.0),
+            "normal_min": norm_min,
+            "normal_max": norm_max,
+            "crit_threshold": meta.get("iso_alert_threshold"),
             "source": latest.get("data_source", "SIMULATION") if latest else "SIMULATION"
         })
     return {
         "machine_id": app_state.selected_machine_id,
         "total_tags": len(tag_list),
+        "mqtt_live": watchdog_st["is_stream_live"],
+        "mqtt_delta_t_ms": mqtt_consumer.last_delta_t_ms,
         "tags": tag_list
     }
 

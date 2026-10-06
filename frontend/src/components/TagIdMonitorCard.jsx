@@ -133,8 +133,10 @@ export default function TagIdMonitorCard({ liveTagsData }) {
           return (
             <div
               key={tag.tag_id}
-              className={`p-3.5 rounded-xl border ${st.border} ${st.bg} flex flex-col justify-between transition-all hover:scale-[1.01] ${
-                isLive ? 'ring-1 ring-emerald-500/40' : ''
+              className={`p-3.5 rounded-xl border ${st.border} ${st.bg} flex flex-col justify-between transition-all duration-300 hover:scale-[1.01] ${
+                isLive
+                  ? (st.label.startsWith('CRITICAL') ? 'ring-2 ring-red-500 shadow-lg shadow-red-900/30' : (st.label === 'WARNING' ? 'ring-2 ring-amber-500 shadow-md shadow-amber-900/20' : 'ring-2 ring-emerald-500 shadow-md shadow-emerald-900/30 bg-emerald-950/20'))
+                  : ''
               }`}
             >
               <div>
@@ -151,9 +153,12 @@ export default function TagIdMonitorCard({ liveTagsData }) {
                   {tag.description}
                 </div>
                 {isLive && (
-                  <div className="text-[10px] font-mono text-emerald-400 mt-1 flex items-center gap-1 font-semibold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                    TAG TRANSMITTED VIA GPU
+                  <div className="text-[10px] font-mono text-emerald-400 mt-1.5 flex items-center gap-1.5 font-bold">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span>INGESTING LIVE</span>
                   </div>
                 )}
               </div>
@@ -166,7 +171,7 @@ export default function TagIdMonitorCard({ liveTagsData }) {
                   <span className="text-xs text-slate-400 ml-1 font-semibold">{tag.unit}</span>
                 </div>
                 <div className="text-[10px] text-slate-400 font-mono text-right">
-                  <span>Norm: {tag.normal_min}-{tag.normal_max}</span>
+                  <span>Norm: {tag.normal_min !== undefined ? tag.normal_min : '--'}-{tag.normal_max !== undefined ? tag.normal_max : '--'}</span>
                 </div>
               </div>
             </div>
