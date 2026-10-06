@@ -35,9 +35,10 @@ def run_stream(host="127.0.0.1", port=8001, seconds=60, interval=1.0, fault=Fals
     base_load = 50.0 if not fault else 92.0
 
     while time.time() - start_time < seconds:
+        now_utc = datetime.datetime.now(datetime.timezone.utc)
         packet = {
             "machine_id": "MCH-802X",
-            "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+            "timestamp": now_utc.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "sampling_interval_ms": int(interval * 1000),
             "sequence_id": step,
             "tags": {
