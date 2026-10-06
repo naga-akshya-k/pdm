@@ -31,12 +31,16 @@ class DataQualityValidator:
         try:
             clean_ts = ts_str.replace("Z", "+00:00")
             dt = datetime.datetime.fromisoformat(clean_ts)
+            if dt.tzinfo is not None:
+                dt = dt.astimezone(datetime.timezone.utc).replace(tzinfo=None)
             return dt, dt.isoformat() + "Z"
         except Exception:
             # Fallback format parsing
             for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S.%f"):
                 try:
                     dt = datetime.datetime.strptime(ts_str, fmt)
+                    if dt.tzinfo is not None:
+                        dt = dt.astimezone(datetime.timezone.utc).replace(tzinfo=None)
                     return dt, dt.isoformat() + "Z"
                 except Exception:
                     continue
@@ -91,8 +95,12 @@ class DataQualityValidator:
         }
 
         # Timestamp sequencing check
+        if timestamp_dt.tzinfo is not None:
+            timestamp_dt = timestamp_dt.astimezone(datetime.timezone.utc).replace(tzinfo=None)
         if machine_id in self.last_timestamp_by_machine:
             last_dt = self.last_timestamp_by_machine[machine_id]
+            if last_dt.tzinfo is not None:
+                last_dt = last_dt.astimezone(datetime.timezone.utc).replace(tzinfo=None)
             if timestamp_dt <= last_dt:
                 flags["is_out_of_order"] = True
                 flags["data_quality"] = "SUSPECT_OUT_OF_ORDER"
